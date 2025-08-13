@@ -11,6 +11,32 @@ function sanitizeFilename(name) {
 
 export async function POST(request) {
   try {
+    const contentType = request.headers.get("content-type") || "";
+
+    // JSON path: expects direct-to-storage URLs (preferred on Vercel)
+    if (contentType.includes("application/json")) {
+      const { title, channelName, videoUrl, thumbnailUrl } = await request.json();
+      if (!title || !channelName || !videoUrl || !thumbnailUrl) {
+        return NextResponse.json(
+          { error: "Missing required fields: title, channelName, videoUrl, thumbnailUrl" },
+          { status: 400 }
+        );
+      }
+      const { db } = await connectToDatabase();
+      await db.collection("videos").insertOne({
+        title,
+        channel: channelName,
+        thumbnail: thumbnailUrl,
+        video: videoUrl,
+        createdAt: new Date(),
+      });
+      return NextResponse.json({
+        message: "Video saved successfully",
+        video: { title, channel: channelName, thumbnail: thumbnailUrl, video: videoUrl },
+      });
+    }
+
+    // Fallback form-data path: saves to local filesystem (works locally for small files)
     const form = await request.formData();
     const title = form.get("title");
     const channelName = form.get("channelName") || form.get("channel");

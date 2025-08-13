@@ -9,32 +9,58 @@ export default function Create() {
   const [channelName, setChannelName] = useState("");
   const [video, setVideo] = useState(null);
   const [thumbnail, setThumbnail] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("channelName", channelName);
-    formData.append("video", video);
-    formData.append("thumbnail", thumbnail);
+    if (!video || !thumbnail) return;
+    setIsUploading(true);
+    try {
+      // 1) Get one-time upload URLs (Vercel Blob)
+      const getUrl = async () => {
+        const r = await fetch("/api/blob-url", { method: "POST" });
+        if (!r.ok) throw new Error("Failed to get upload URL");
+        return r.json();
+      };
+      const [{ url: videoPutUrl }, { url: thumbPutUrl }] = await Promise.all([getUrl(), getUrl()]);
 
-    const res = await fetch("/api/uploadVideo", {
-      method: "POST",
-      body: formData,
-    });
+      // 2) Upload files directly to Blob storage
+      const [videoRes, thumbRes] = await Promise.all([
+        fetch(videoPutUrl, {
+          method: "PUT",
+          headers: { "content-type": video.type, "x-vercel-filename": video.name },
+          body: video,
+        }),
+        fetch(thumbPutUrl, {
+          method: "PUT",
+          headers: { "content-type": thumbnail.type, "x-vercel-filename": thumbnail.name },
+          body: thumbnail,
+        }),
+      ]);
+      if (!videoRes.ok || !thumbRes.ok) throw new Error("Direct upload failed");
+      const videoUrl = videoRes.headers.get("location");
+      const thumbnailUrl = thumbRes.headers.get("location");
+      if (!videoUrl || !thumbnailUrl) throw new Error("Missing blob URLs");
 
-    if (res.ok) {
+      // 3) Save metadata + URLs in DB
+      const saveRes = await fetch("/api/uploadVideo", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title, channelName, videoUrl, thumbnailUrl }),
+      });
+      if (!saveRes.ok) {
+        const j = await saveRes.json().catch(() => ({}));
+        throw new Error(j?.error || j?.detail || saveRes.statusText);
+      }
+
       alert("Uploaded successfully");
       setTitle("");
       setChannelName("");
       setVideo(null);
       setThumbnail(null);
-    } else {
-      let detail = "";
-      try {
-        const json = await res.json();
-        detail = json?.error || json?.detail || res.statusText;
-      } catch {}
-      alert(`Upload failed: ${detail}`);
+    } catch (err) {
+      alert(`Upload failed: ${String(err)}`);
+    } finally {
+      setIsUploading(false);
     }
   };
     return (
@@ -54,7 +80,7 @@ export default function Create() {
                 <input type="file" placeholder="Thumbnail" accept="image/*" onChange={(e) => setThumbnail(e.target.files?.[0] || null)} required className={styles.inputFile} />
                 <label htmlFor="video">Video (mp4)</label>
                 <input type="file" placeholder="Video" accept="video/*" onChange={(e) => setVideo(e.target.files?.[0] || null)} required className={styles.inputFile} />
-                <button type="submit" className={styles.button}>Upload</button>
+                <button type="submit" className={styles.button} disabled={isUploading}>{isUploading ? "Uploading..." : "Upload"}</button>
             </form>
         </div>
         </div>
