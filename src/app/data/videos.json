@@ -1,0 +1,107 @@
+[
+    {
+      "id": 1,
+      "title": "Learn Next.js in 10 Minutes",
+      "thumbnail": "https://www.youtube.com/embed/jDCfthL4Ixg",
+      "channel": "Code Master",
+      "views": "1.2M views",
+      "time": "2 weeks ago"
+    },
+    {
+      "id": 2,
+      "title": "JavaScript Crash Course",
+      "thumbnail": "https://www.youtube.com/embed/ZS3s5yI1gLM",
+      "channel": "Dev Guru",
+      "views": "850K views",
+      "time": "1 month ago"
+    },
+    {
+      "id": 3,
+      "title": "CSS Animation Tutorial",
+      "thumbnail": "https://www.youtube.com/embed/1gMFgxQ8NPM",
+      "channel": "Design Pro",
+      "views": "420K views",
+      "time": "3 months ago"
+    },
+    {
+        "id": 4,
+        "title": "CSS Animation Tutorial",
+        "thumbnail": "https://www.youtube.com/embed/gmW-KUpr98M",
+        "channel": "Design Pro",
+        "views": "420K views",
+        "time": "3 months ago"
+    },
+    {
+        "id": 5,
+        "title": "CSS Animation Tutorial",
+        "thumbnail": "https://www.youtube.com/embed/qXHC7baN2YQ",
+        "channel": "Design Pro",
+        "views": "420K views",
+        "time": "3 months ago"
+    },
+    {
+        "id": 6,
+        "title": "CSS Animation Tutorial",
+        "thumbnail": "https://www.youtube.com/embed/-F5w2OCXY9U",
+        "channel": "Design Pro",
+        "views": "420K views",
+        "time": "3 months ago"
+    },
+    {
+        "id": 7,
+        "title": "CSS Animation Tutorial",
+        "thumbnail": "https://www.youtube.com/embed/1c52g7LzLYU",
+        "channel": "Design Pro",
+        "views": "420K views",
+        "time": "3 months ago"
+    },
+    {
+        "id": 8,
+        "title": "CSS Animation Tutorial",
+        "thumbnail": "https://www.youtube.com/embed/S1rix8GXErc",
+        "channel": "Design Pro",
+        "views": "420K views",
+        "time": "3 months ago"
+    },
+    {
+        "id": 9,
+        "title": "CSS Animation Tutorial",
+        "thumbnail": "https://www.youtube.com/embed/oINFmhkudGM",
+        "channel": "Design Pro",
+        "views": "420K views",
+        "time": "3 months ago"
+    },
+    {
+        "id": 10,
+        "title": "CSS Animation Tutorial",
+        "thumbnail": "https://www.youtube.com/embed/0dDuLDwsuK0",
+        "channel": "Design Pro",
+        "views": "420K views",
+        "time": "3 months ago"
+    },
+    {
+        "id": 11,
+        "title": "CSS Animation Tutorial",
+        "thumbnail": "https://www.youtube.com/embed/Ih_4C6DJ0EU",
+        "channel": "Design Pro",
+        "views": "420K views",
+        "time": "3 months ago"
+    },
+    {
+        "id": 12,
+        "title": "CSS Animation Tutorial",
+        "thumbnail": "https://www.youtube.com/embed/fG9Eq1Ns-2Y?si",
+        "channel": "Design Pro",
+        "views": "420K views",
+        "time": "3 months ago"
+    },
+    {
+        "id": 13,
+        "title": "CSS Animation Tutorial",
+        "thumbnail": "https://www.youtube.com/embed/l467qZHOuOw",
+        "channel": "Design Pro",
+        "views": "420K views",
+        "time": "3 months ago"
+    }
+  ]
+  
