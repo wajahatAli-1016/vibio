@@ -15,7 +15,7 @@ export default function WatchNavbar() {
         <div className={styles.watchLeft}>
           <img src={menu.src} alt="menu" className={`${styles.menuImg} ${styles.mobileOnly}`} />
           <img src={logo.src} alt="logo" className={styles.logoImg} />
-          <h1 className={styles.logoText}>Youtube</h1>
+          <h1 className={styles.logoText}>Vibio</h1>
         </div>
         <div className={`${styles.watchCenter} ${styles.desktopOnly}`}>
           <div className={styles.watchSearch}>
