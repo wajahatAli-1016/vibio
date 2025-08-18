@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "../../lib/db";
 import path from "path";
 import { promises as fs } from "fs";
+import { put } from "@vercel/blob";
 
 export const runtime = "nodejs";
 
@@ -36,7 +37,7 @@ export async function POST(request) {
       });
     }
 
-    // Fallback form-data path: saves to local filesystem (works locally for small files)
+    // Form-data path: in dev saves to local filesystem; in prod uploads to Vercel Blob
     const form = await request.formData();
     const title = form.get("title");
     const channelName = form.get("channelName") || form.get("channel");
@@ -50,20 +51,38 @@ export async function POST(request) {
       );
     }
 
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadsDir, { recursive: true });
+    const useVercelBlob = Boolean(process.env.BLOB_READ_WRITE_TOKEN) || process.env.VERCEL === "1";
 
-    const videoFilename = `${Date.now()}-${sanitizeFilename(videoFile.name)}`;
-    const thumbFilename = `${Date.now()}-${sanitizeFilename(thumbnailFile.name)}`;
+    let videoPath;
+    let thumbnailPath;
 
-    const videoArrayBuffer = await videoFile.arrayBuffer();
-    const thumbArrayBuffer = await thumbnailFile.arrayBuffer();
+    if (useVercelBlob) {
+      const videoFilename = `${Date.now()}-${sanitizeFilename(videoFile.name)}`;
+      const thumbFilename = `${Date.now()}-${sanitizeFilename(thumbnailFile.name)}`;
 
-    await fs.writeFile(path.join(uploadsDir, videoFilename), Buffer.from(videoArrayBuffer));
-    await fs.writeFile(path.join(uploadsDir, thumbFilename), Buffer.from(thumbArrayBuffer));
+      const [videoPut, thumbPut] = await Promise.all([
+        put(videoFilename, videoFile, { access: "public" }),
+        put(thumbFilename, thumbnailFile, { access: "public" }),
+      ]);
 
-    const videoPath = `/uploads/${videoFilename}`;
-    const thumbnailPath = `/uploads/${thumbFilename}`;
+      videoPath = videoPut.url;
+      thumbnailPath = thumbPut.url;
+    } else {
+      const uploadsDir = path.join(process.cwd(), "public", "uploads");
+      await fs.mkdir(uploadsDir, { recursive: true });
+
+      const videoFilename = `${Date.now()}-${sanitizeFilename(videoFile.name)}`;
+      const thumbFilename = `${Date.now()}-${sanitizeFilename(thumbnailFile.name)}`;
+
+      const videoArrayBuffer = await videoFile.arrayBuffer();
+      const thumbArrayBuffer = await thumbnailFile.arrayBuffer();
+
+      await fs.writeFile(path.join(uploadsDir, videoFilename), Buffer.from(videoArrayBuffer));
+      await fs.writeFile(path.join(uploadsDir, thumbFilename), Buffer.from(thumbArrayBuffer));
+
+      videoPath = `/uploads/${videoFilename}`;
+      thumbnailPath = `/uploads/${thumbFilename}`;
+    }
 
     const { db } = await connectToDatabase();
     await db.collection("videos").insertOne({
