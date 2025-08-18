@@ -51,7 +51,17 @@ export async function POST(request) {
       );
     }
 
-    const useVercelBlob = Boolean(process.env.BLOB_READ_WRITE_TOKEN) || process.env.VERCEL === "1";
+    // On Vercel, local filesystem is ephemeral/non-writable. Require Blob token there.
+    if (process.env.VERCEL === "1" && !process.env.BLOB_READ_WRITE_TOKEN) {
+      return NextResponse.json(
+        {
+          error: "File uploads on Vercel require external storage. Set BLOB_READ_WRITE_TOKEN (Vercel Blob) or switch to another persistent storage.",
+        },
+        { status: 500 }
+      );
+    }
+
+    const useVercelBlob = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
     let videoPath;
     let thumbnailPath;
