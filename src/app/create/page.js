@@ -15,41 +15,20 @@ export default function Create() {
     if (!video || !thumbnail) return;
     setIsUploading(true);
     try {
-      // 1) Get one-time upload URLs (Vercel Blob)
-      const getUrl = async () => {
-        const r = await fetch("/api/blob-url", { method: "POST" });
-        if (!r.ok) throw new Error("Failed to get upload URL");
-        return r.json();
-      };
-      const [{ url: videoPutUrl }, { url: thumbPutUrl }] = await Promise.all([getUrl(), getUrl()]);
+      // Send multipart form-data directly to our API, which saves files locally and stores DB record
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("channelName", channelName);
+      formData.append("video", video);
+      formData.append("thumbnail", thumbnail);
 
-      // 2) Upload files directly to Blob storage
-      const [videoRes, thumbRes] = await Promise.all([
-        fetch(videoPutUrl, {
-          method: "PUT",
-          headers: { "content-type": video.type, "x-vercel-filename": video.name },
-          body: video,
-        }),
-        fetch(thumbPutUrl, {
-          method: "PUT",
-          headers: { "content-type": thumbnail.type, "x-vercel-filename": thumbnail.name },
-          body: thumbnail,
-        }),
-      ]);
-      if (!videoRes.ok || !thumbRes.ok) throw new Error("Direct upload failed");
-      const videoUrl = videoRes.headers.get("location");
-      const thumbnailUrl = thumbRes.headers.get("location");
-      if (!videoUrl || !thumbnailUrl) throw new Error("Missing blob URLs");
-
-      // 3) Save metadata + URLs in DB
-      const saveRes = await fetch("/api/uploadVideo", {
+      const res = await fetch("/api/uploadVideo", {
         method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ title, channelName, videoUrl, thumbnailUrl }),
+        body: formData,
       });
-      if (!saveRes.ok) {
-        const j = await saveRes.json().catch(() => ({}));
-        throw new Error(j?.error || j?.detail || saveRes.statusText);
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j?.error || j?.detail || res.statusText);
       }
 
       alert("Uploaded successfully");
