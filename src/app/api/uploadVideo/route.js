@@ -75,8 +75,9 @@ export async function POST(request) {
         put(thumbFilename, thumbnailFile, { access: "public" }),
       ]);
 
-      videoPath = videoPut.url;
-      thumbnailPath = thumbPut.url;
+      // Store filenames instead of full URLs, so we can serve them through our API routes
+      videoPath = videoFilename;
+      thumbnailPath = thumbFilename;
     } else {
       const uploadsDir = path.join(process.cwd(), "public", "uploads");
       await fs.mkdir(uploadsDir, { recursive: true });

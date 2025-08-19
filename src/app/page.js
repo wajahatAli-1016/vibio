@@ -148,10 +148,24 @@ export default function Home() {
           const title = video.title;
           const channelTitle = video.channel;
           const timeText = video.createdAt ? formatTimeAgo(video.createdAt) : undefined;
+          
+          // Handle thumbnail URL - if it's a filename (no slash), use API route
+          const getThumbnailUrl = (thumb) => {
+            if (!thumb) return null;
+            // If it's a local upload path (starts with /uploads/), use as is
+            if (thumb.startsWith('/uploads/')) return thumb;
+            // If it's just a filename (no slash), use our API route
+            if (!thumb.includes('/')) return `/api/thumbnail/${thumb}`;
+            // If it's already a full URL, use as is
+            return thumb;
+          };
+          
+          const finalThumbUrl = getThumbnailUrl(thumbUrl);
+          
           return (
             <Link key={videoId} href={`/watch/${videoId}`} className={styles.videoCard}>
-              {thumbUrl ? (
-                <img src={thumbUrl} alt={title} className={styles.videoCardImg} />
+              {finalThumbUrl ? (
+                <img src={finalThumbUrl} alt={title} className={styles.videoCardImg} />
               ) : (
                 <div className={styles.videoCardImg} style={{width: 350, height: 198, background: '#eee'}} />
               )}

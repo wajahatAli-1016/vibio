@@ -77,7 +77,13 @@ export default async function WatchPage({ params }) {
       <div className={`${styles.watchContent} ${styles.watchLayout}`}>
         <div className={styles.watchMain}>
           <div className={styles.watchPlayer}>
-            <video className={styles.watchIframe} src={dbVideo.video} poster={dbVideo.thumbnail} controls autoPlay />
+            <video 
+              className={styles.watchIframe} 
+              src={dbVideo.video.includes('/') ? dbVideo.video : `/api/video/${dbVideo.video}`} 
+              poster={dbVideo.thumbnail.includes('/') ? dbVideo.thumbnail : `/api/thumbnail/${dbVideo.thumbnail}`} 
+              controls 
+              autoPlay 
+            />
           </div>
           <h2 style={{ marginTop: 12, fontWeight: 600 }}>{title}</h2>
           <p style={{ color: "#666" }}>{[channelTitle, timeText].filter(Boolean).join(" • ")}</p>
@@ -90,15 +96,29 @@ export default async function WatchPage({ params }) {
               const sTitle = v.title || "";
               const sChannel = v.channel || "";
               const sTime = v.createdAt ? formatTimeAgo(v.createdAt) : undefined;
+              
+              // Handle thumbnail URL - if it's a filename (no slash), use API route
+              const getThumbnailUrl = (thumb) => {
+                if (!thumb) return null;
+                // If it's a local upload path (starts with /uploads/), use as is
+                if (thumb.startsWith('/uploads/')) return thumb;
+                // If it's just a filename (no slash), use our API route
+                if (!thumb.includes('/')) return `/api/thumbnail/${thumb}`;
+                // If it's already a full URL, use as is
+                return thumb;
+              };
+              
+              const finalThumbUrl = getThumbnailUrl(thumbUrl);
+              
               return (
                 <Link
                   key={v.id}
                   href={`/watch/${v.id}`}
                   style={{ display: "flex", gap: 8, textDecoration: "none", color: "inherit" }}
                 >
-                  {thumbUrl ? (
+                  {finalThumbUrl ? (
                     <img
-                      src={thumbUrl}
+                      src={finalThumbUrl}
                       alt={sTitle}
                       style={{ width: 168, height: 94, borderRadius: 8, objectFit: "cover", flexShrink: 0 }}
                     />
